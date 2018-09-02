@@ -1,0 +1,6 @@
+{
+    "board": "arduino:avr:uno",
+    "sketch": "Slave.ino",
+    "port": "COM3",
+    "output": ".\\.arduino\\tmp"
+}

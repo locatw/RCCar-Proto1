@@ -1,15 +1,20 @@
 #include <ESP8266WiFi.h>
+#include <Wire.h>
 #include "Secrets.h"
 
 #define SERVER_PORT 54237
+#define SLAVE_DEVICE_ID 8
 
 WiFiServer server(SERVER_PORT);
 WiFiClient client;
 boolean client_connected = false;
 
 void process();
+void send_command(int command);
 
 void setup() {
+    Wire.begin();
+
     Serial.begin(115200);
 
     Serial.print("Connect to ");
@@ -62,12 +67,20 @@ void process() {
     const uint command = (uint)data;
     switch (command) {
         case 0x1:
-            Serial.println("Command: command1");
+            Serial.println("[Master] Command: command1");
+            send_command(command);
             break;
         case 0x2:
-            Serial.println("Command: command2");
+            Serial.println("[Master] Command: command2");
+            send_command(command);
             break;
         default:
             break;
     }
+}
+
+void send_command(int command) {
+    Wire.beginTransmission(SLAVE_DEVICE_ID);
+    Wire.write(command);
+    Wire.endTransmission();
 }
