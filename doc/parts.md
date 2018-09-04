@@ -1,4 +1,30 @@
-# Screws
+# Parts
+
+## Electronics
+
+* Arduino
+  * [ESPr® Developer](https://www.switch-science.com/catalog/2500/)
+  * [Arduino Pro Mini 328 - 5V/16MHz](https://www.sparkfun.com/products/11113)
+* Motor Driver
+  * [Dual TB6612FNG (1A) - ROB-14451](https://www.sparkfun.com/products/14451) x2
+* USB to Serial Converter
+  * [FTDI USBシリアル変換アダプター Rev.2](https://www.switch-science.com/catalog/2782/)
+* Voltage Regulator
+  * [5V Step-Up/Step-Down Voltage Regulator S9V11F5](https://www.pololu.com/product/2836)
+* Battery
+  * [eneloop](https://www.panasonic.com/global/consumer/battery/eneloop/lineup.html) x9
+* Battery Case
+  * 3 x AA battery case
+  * 2 x AA battery case
+
+## Actuators
+
+* Motor
+  * [75:1 Micro Metal Gearmotor HP 6V with Extended Motor Shaft](https://www.pololu.com/product/2215) x4
+* Servo
+  * [SG90 Analog | Tower Pro](http://www.towerpro.com.tw/product/sg90-analog/) x2
+
+## Screws
 
 | Type | Size | Place | Count |
 |---|---|---|--:|
