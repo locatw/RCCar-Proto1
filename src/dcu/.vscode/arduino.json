@@ -1,0 +1,7 @@
+{
+    "sketch": "dcu.ino",
+    "board": "arduino:avr:pro",
+    "configuration": "cpu=16MHzatmega328",
+    "port": "COM5",
+    "output": ".\\.arduino\\build"
+}

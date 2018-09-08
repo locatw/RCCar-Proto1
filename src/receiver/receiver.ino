@@ -1,5 +1,8 @@
 #include <ESP8266WiFi.h>
+#include <Wire.h>
 #include "secrets.h"
+
+#define DEVICE_ID_DCU 1
 
 #define CMD_KIND_STEERING_ANGLE 1
 
@@ -16,11 +19,14 @@ boolean client_connected = false;
 
 void init_wifi();
 Command* read_command();
+void send_command(Command*);
 
 void setup() {
     Serial.begin(115200);
 
     init_wifi();
+
+    Wire.begin();
 }
 
 void loop(){
@@ -45,6 +51,8 @@ void loop(){
     if (command != NULL) {
         Serial.println(command->kind);
         Serial.println(command->value);
+
+        send_command(command);
 
         delete command;
     }
@@ -81,4 +89,13 @@ Command* read_command() {
     command->value = (int8_t)buffer[1];
 
     return command;
+}
+
+void send_command(Command* command) {
+    if (command == NULL) { return; }
+
+    Wire.beginTransmission(DEVICE_ID_DCU);
+    Wire.write(command->kind);
+    Wire.write(command->value);
+    Wire.endTransmission();
 }
