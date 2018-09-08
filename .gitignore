@@ -1,4 +1,5 @@
 .arduino
+c_cpp_properties.json
 bin
 obj
 Secrets.h
