@@ -1,6 +1,7 @@
 #include <ESP8266WiFi.h>
 #include <Wire.h>
 #include "secrets.h"
+#include "../../../../common/device.h"
 
 #define DEVICE_ID_DCU 1
 

@@ -1,6 +1,5 @@
 #include <Wire.h>
-
-#define DEVICE_ID_DCU 1
+#include "../../../../common/device.h"
 
 void i2c_receive_event(int num_bytes);
 
