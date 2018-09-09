@@ -1,18 +1,10 @@
 #include <ESP8266WiFi.h>
 #include <Wire.h>
 #include "secrets.h"
+#include "../../../../common/command.h"
 #include "../../../../common/device.h"
 
-#define DEVICE_ID_DCU 1
-
-#define CMD_KIND_STEERING_ANGLE 1
-
 #define SERVER_PORT 54237
-
-struct Command {
-    int8_t kind;
-    int8_t value;
-};
 
 WiFiServer server(SERVER_PORT);
 WiFiClient client;
