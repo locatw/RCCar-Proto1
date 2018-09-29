@@ -3,13 +3,24 @@
 #include "../../../../common/command.h"
 #include "../../../../common/device.h"
 
-#define FRONT_SERVO_PWM_PIN 11
+// Servo library disables analogWrite() (PWM) functionality on pins 9 and 10,
+// so cannot connect 9 and 10 pins with motor pwm when use servo together.
+//
+// See Servo library reference.
+#define FRONT_SERVO_PWM_PIN 9
+#define FRONT_L_MOTOR_PWM_PIN 11
+#define FRONT_L_MOTOR_PHASE_PIN 8
 
 #define MIN_STEERING_ANGLE -30
 #define MAX_STEERING_ANGLE 30
 #define MIN_SERVO_ANGLE 60
 #define MAX_SERVO_ANGLE 120
 #define SERVO_ANGLE_CORRECTION_VALUE 5 
+
+#define MIN_DRIVE_VALUE -100
+#define MAX_DRIVE_VALUE 100
+#define FORWARD_PHASE 0
+#define BACKWARD_PHASE 1
 
 void steer(int angle);
 void i2c_receive_event(int num_bytes);
@@ -24,6 +35,11 @@ void setup() {
 
     front_servo.attach(FRONT_SERVO_PWM_PIN);
     front_servo.write(steer_angle);
+
+    pinMode(FRONT_L_MOTOR_PWM_PIN, OUTPUT);
+    pinMode(FRONT_L_MOTOR_PHASE_PIN, OUTPUT);
+    digitalWrite(FRONT_L_MOTOR_PWM_PIN, 0);
+    digitalWrite(FRONT_L_MOTOR_PWM_PIN, 0);
 
     Wire.begin(DEVICE_ID_DCU);
     Wire.onReceive(i2c_receive_event);
@@ -56,6 +72,26 @@ void steer(int angle) {
     front_servo.write(servo_angle);
 }
 
+void drive(int value) {
+    if (value < MIN_DRIVE_VALUE) {
+        value = MIN_DRIVE_VALUE;
+    }
+    else if (MAX_DRIVE_VALUE < value) {
+        value = MAX_DRIVE_VALUE;
+    }
+
+    int direction = (0 <= value) ? FORWARD_PHASE : BACKWARD_PHASE;
+    int pwm = map(abs(value), 0, MAX_DRIVE_VALUE, 0, 255);
+
+    Serial.print("direction: ");
+    Serial.println(direction);
+    Serial.print("pwm: ");
+    Serial.println(pwm);
+
+    digitalWrite(FRONT_L_MOTOR_PHASE_PIN, direction);
+    analogWrite(FRONT_L_MOTOR_PWM_PIN, pwm);
+}
+
 void i2c_receive_event(int num_bytes) {
     Command* command = read_command();
     Serial.println(command->kind);
@@ -64,6 +100,9 @@ void i2c_receive_event(int num_bytes) {
     switch (command->kind) {
         case CMD_KIND_STEERING_ANGLE:
             steer(command->value);
+            break;
+        case CMD_KIND_DRIVE:
+            drive(command->value);
             break;
         default:
             break;
