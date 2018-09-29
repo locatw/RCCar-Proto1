@@ -8,6 +8,8 @@
 //
 // See Servo library reference.
 #define FRONT_SERVO_PWM_PIN 9
+#define BACK_SERVO_PWM_PIN 10
+
 #define FRONT_L_MOTOR_PWM_PIN 11
 #define FRONT_L_MOTOR_PHASE_PIN 8
 
@@ -27,14 +29,15 @@ void i2c_receive_event(int num_bytes);
 Command* read_command();
 
 Servo front_servo;
-
-int steer_angle = 90 + SERVO_ANGLE_CORRECTION_VALUE;
+Servo back_servo;
 
 void setup() {
     Serial.begin(115200);
 
     front_servo.attach(FRONT_SERVO_PWM_PIN);
-    front_servo.write(steer_angle);
+    front_servo.write(90 + SERVO_ANGLE_CORRECTION_VALUE);
+    back_servo.attach(BACK_SERVO_PWM_PIN);
+    back_servo.write(90 + SERVO_ANGLE_CORRECTION_VALUE);
 
     pinMode(FRONT_L_MOTOR_PWM_PIN, OUTPUT);
     pinMode(FRONT_L_MOTOR_PHASE_PIN, OUTPUT);
@@ -60,16 +63,25 @@ void steer(int angle) {
     Serial.print("angle: ");
     Serial.println(angle);
 
-    int servo_angle =
+    int front_servo_angle =
         map(angle,
             MIN_STEERING_ANGLE, MAX_STEERING_ANGLE,
             MIN_SERVO_ANGLE, MAX_SERVO_ANGLE);
-    servo_angle += SERVO_ANGLE_CORRECTION_VALUE;
+    front_servo_angle += SERVO_ANGLE_CORRECTION_VALUE;
 
-    Serial.print("servo angle: ");
-    Serial.println(servo_angle);
+    int back_servo_angle =
+        map(-angle,
+            MIN_STEERING_ANGLE, MAX_STEERING_ANGLE,
+            MIN_SERVO_ANGLE, MAX_SERVO_ANGLE);
+    back_servo_angle += SERVO_ANGLE_CORRECTION_VALUE;
 
-    front_servo.write(servo_angle);
+    Serial.print("front_servo angle: ");
+    Serial.println(front_servo_angle);
+    Serial.print("back_servo angle: ");
+    Serial.println(back_servo_angle);
+
+    front_servo.write(front_servo_angle);
+    back_servo.write(back_servo_angle);
 }
 
 void drive(int value) {
