@@ -12,12 +12,18 @@
 
 #define FRONT_L_MOTOR_PWM_PIN 11
 #define FRONT_L_MOTOR_PHASE_PIN 8
+#define FRONT_R_MOTOR_PWM_PIN 6
+#define FRONT_R_MOTOR_PHASE_PIN 7
+#define BACK_L_MOTOR_PWM_PIN 5
+#define BACK_L_MOTOR_PHASE_PIN 4
+#define BACK_R_MOTOR_PWM_PIN 3
+#define BACK_R_MOTOR_PHASE_PIN 2
 
 #define MIN_STEERING_ANGLE -30
 #define MAX_STEERING_ANGLE 30
 #define MIN_SERVO_ANGLE 60
 #define MAX_SERVO_ANGLE 120
-#define SERVO_ANGLE_CORRECTION_VALUE 5 
+#define SERVO_ANGLE_CORRECTION_VALUE 5
 
 #define MIN_DRIVE_VALUE -100
 #define MAX_DRIVE_VALUE 100
@@ -41,8 +47,20 @@ void setup() {
 
     pinMode(FRONT_L_MOTOR_PWM_PIN, OUTPUT);
     pinMode(FRONT_L_MOTOR_PHASE_PIN, OUTPUT);
+    pinMode(FRONT_R_MOTOR_PWM_PIN, OUTPUT);
+    pinMode(FRONT_R_MOTOR_PHASE_PIN, OUTPUT);
+    pinMode(BACK_L_MOTOR_PWM_PIN, OUTPUT);
+    pinMode(BACK_L_MOTOR_PHASE_PIN, OUTPUT);
+    pinMode(BACK_R_MOTOR_PWM_PIN, OUTPUT);
+    pinMode(BACK_R_MOTOR_PHASE_PIN, OUTPUT);
     digitalWrite(FRONT_L_MOTOR_PWM_PIN, 0);
-    digitalWrite(FRONT_L_MOTOR_PWM_PIN, 0);
+    digitalWrite(FRONT_L_MOTOR_PHASE_PIN, 0);
+    digitalWrite(FRONT_R_MOTOR_PWM_PIN, 0);
+    digitalWrite(FRONT_R_MOTOR_PHASE_PIN, 0);
+    digitalWrite(BACK_L_MOTOR_PWM_PIN, 0);
+    digitalWrite(BACK_L_MOTOR_PHASE_PIN, 0);
+    digitalWrite(BACK_R_MOTOR_PWM_PIN, 0);
+    digitalWrite(BACK_R_MOTOR_PHASE_PIN, 0);
 
     Wire.begin(DEVICE_ID_DCU);
     Wire.onReceive(i2c_receive_event);
@@ -92,16 +110,23 @@ void drive(int value) {
         value = MAX_DRIVE_VALUE;
     }
 
-    int direction = (0 <= value) ? FORWARD_PHASE : BACKWARD_PHASE;
+    int front_left_dir = (0 <= value) ? FORWARD_PHASE : BACKWARD_PHASE;
+    int front_right_dir = (0 <= value) ? BACKWARD_PHASE : FORWARD_PHASE;
+    int back_left_dir = (0 <= value) ? FORWARD_PHASE : BACKWARD_PHASE;
+    int back_right_dir = (0 <= value) ? BACKWARD_PHASE : FORWARD_PHASE;
     int pwm = map(abs(value), 0, MAX_DRIVE_VALUE, 0, 255);
 
-    Serial.print("direction: ");
-    Serial.println(direction);
     Serial.print("pwm: ");
     Serial.println(pwm);
 
-    digitalWrite(FRONT_L_MOTOR_PHASE_PIN, direction);
+    digitalWrite(FRONT_L_MOTOR_PHASE_PIN, front_left_dir);
     analogWrite(FRONT_L_MOTOR_PWM_PIN, pwm);
+    digitalWrite(FRONT_R_MOTOR_PHASE_PIN, front_right_dir);
+    analogWrite(FRONT_R_MOTOR_PWM_PIN, pwm);
+    digitalWrite(BACK_L_MOTOR_PHASE_PIN, back_left_dir);
+    analogWrite(BACK_L_MOTOR_PWM_PIN, pwm);
+    digitalWrite(BACK_R_MOTOR_PHASE_PIN, back_right_dir);
+    analogWrite(BACK_R_MOTOR_PWM_PIN, pwm);
 }
 
 void i2c_receive_event(int num_bytes) {
