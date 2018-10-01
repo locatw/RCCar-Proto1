@@ -1,3 +1,4 @@
+#include <math.h>
 #include <Servo.h>
 #include <Wire.h>
 #include "../../../../common/command.h"
@@ -31,12 +32,17 @@
 #define FORWARD_PHASE 0
 #define BACKWARD_PHASE 1
 
+#define WHEEL_BASE 127.0 // mm
+#define TREAD 77.0 // cm
+
 void steer(int angle);
 void i2c_receive_event(int num_bytes);
 Command* read_command();
 
 Servo front_servo;
 Servo back_servo;
+
+int steering_angle = 0;
 
 void setup() {
     Serial.begin(115200);
@@ -78,6 +84,7 @@ void steer(int angle) {
     else if (MAX_STEERING_ANGLE < angle) {
         angle = MAX_STEERING_ANGLE;
     }
+    steering_angle = angle;
 
     Serial.print("angle: ");
     Serial.println(angle);
@@ -115,19 +122,58 @@ void drive(int value) {
     int front_right_dir = (0 <= value) ? BACKWARD_PHASE : FORWARD_PHASE;
     int back_left_dir = (0 <= value) ? FORWARD_PHASE : BACKWARD_PHASE;
     int back_right_dir = (0 <= value) ? BACKWARD_PHASE : FORWARD_PHASE;
-    int pwm = map(abs(value), 0, MAX_DRIVE_VALUE, 0, 255);
+    double pwm = map(abs(value), 0, MAX_DRIVE_VALUE, 0, 255);
+    double front_left_pwm = pwm;
+    double front_right_pwm = pwm;
+    double back_left_pwm = pwm;
+    double back_right_pwm = pwm;
 
-    Serial.print("pwm: ");
-    Serial.println(pwm);
+    if (steering_angle != 0) {
+        double theta1 = abs(steering_angle) * PI / 180.0;
+        Serial.print("theta1: ");
+        Serial.println(theta1);
+        double tan_theta1 = tan(theta1);
+        Serial.print("tan_theta1: ");
+        Serial.println(tan_theta1);
+        double tan_theta2 = WHEEL_BASE * tan_theta1 / (WHEEL_BASE - 2.0 * TREAD * tan_theta1);
+        Serial.print("tan_theta2: ");
+        Serial.println(tan_theta2);
+        double sin_theta2 = tan_theta2 / sqrt(1.0 + tan_theta2 * tan_theta2);
+        Serial.print("sin_theta2: ");
+        Serial.println(sin_theta2);
+        double alpha = sin(theta1) / sin_theta2;
+        Serial.print("alpha: ");
+        Serial.println(alpha);
+
+        // turn right
+        if (steering_angle < 0) {
+            front_right_pwm = alpha * front_left_pwm;
+            back_right_pwm = alpha * back_left_pwm;
+        }
+        // turn left
+        else {
+            front_left_pwm = alpha * front_right_pwm;
+            back_left_pwm = alpha * back_right_pwm;
+        }
+    }
+
+    Serial.print("front left pwm: ");
+    Serial.println(front_left_pwm);
+    Serial.print("front right pwm: ");
+    Serial.println(front_right_pwm);
+    Serial.print("back left pwm: ");
+    Serial.println(back_left_pwm);
+    Serial.print("back right pwm: ");
+    Serial.println(back_right_pwm);
 
     digitalWrite(FRONT_L_MOTOR_PHASE_PIN, front_left_dir);
-    analogWrite(FRONT_L_MOTOR_PWM_PIN, pwm);
+    analogWrite(FRONT_L_MOTOR_PWM_PIN, front_left_pwm);
     digitalWrite(FRONT_R_MOTOR_PHASE_PIN, front_right_dir);
-    analogWrite(FRONT_R_MOTOR_PWM_PIN, pwm);
+    analogWrite(FRONT_R_MOTOR_PWM_PIN, front_right_pwm);
     digitalWrite(BACK_L_MOTOR_PHASE_PIN, back_left_dir);
-    analogWrite(BACK_L_MOTOR_PWM_PIN, pwm);
+    analogWrite(BACK_L_MOTOR_PWM_PIN, back_left_pwm);
     digitalWrite(BACK_R_MOTOR_PHASE_PIN, back_right_dir);
-    analogWrite(BACK_R_MOTOR_PWM_PIN, pwm);
+    analogWrite(BACK_R_MOTOR_PWM_PIN, back_right_pwm);
 }
 
 void i2c_receive_event(int num_bytes) {
